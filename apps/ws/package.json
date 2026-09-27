@@ -1,0 +1,17 @@
+{
+  "name": "ws",
+  "module": "src/index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@repo/common": "*",
+    "@repo/db": "workspace:*",
+    "@types/bun": "latest",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/ws": "^8.18.1",
+    "jsonwebtoken": "^9.0.3"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
