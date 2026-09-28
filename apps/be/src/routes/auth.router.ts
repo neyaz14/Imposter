@@ -4,10 +4,12 @@ import { zobject, zodErrorMessage } from "@repo/common";
 import { compare, hash } from "bcrypt";
 import { sign } from "jsonwebtoken";
 import { authMiddleware } from "./autmiddleware";
+import "dotenv/config";
+import { JWT_SECRECT } from "../utils/types";
 
 export const authRouter = Router();
 
-const JWT_SECRECT = process.env.JWT_SECRECT!;
+const JWT_SECRET = JWT_SECRECT !;
 
 authRouter.post("/register", async (req, res) => {
   const result = zobject.registerSchema.safeParse(req.body);
@@ -78,7 +80,7 @@ authRouter.post("/login", async (req, res) => {
       return;
     }
 
-    const token = sign({ userId: existingUser?.id }, JWT_SECRECT);
+    const token = sign({ userId: existingUser?.id }, JWT_SECRET);
 
     res.cookie("accessToken", token, {
       httpOnly: true,

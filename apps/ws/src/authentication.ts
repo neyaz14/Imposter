@@ -1,38 +1,65 @@
+import { IncomingMessage } from "http";
+import * as cookie from "cookie";
+import "dotenv/config";
+import jwt from "jsonwebtoken";
 import { prisma } from "@repo/db";
-import { verify } from "jsonwebtoken";
-const JWT_SECRECT = process.env.JWT_SECRECT!;
-export const authenticationUserBeforeOnline = async (ws, req) => {
-    // const token = new URL()
-    // const token = req.cookies.accessToken;
-    const token = req.headers.cookie;
-    // if user doesnt have token kick him in the ass before enter the room
-    if (!token) {
-        ws.close();
-    }
-    // verify the token 
-    let decoded;
-    try {
-        decoded = verify(token, JWT_SECRECT) as {
-            userId: string;
-        };;
-    } catch (error) {
-        ws.close();
-        return;
+import { JWT_SECRECT } from "./types";
+
+
+const JWT_SECRET = JWT_SECRECT;
+const COOKIE_NAME = "accessToken";
+
+console.log('jwt', JWT_SECRET);
+export interface AuthPayload {
+  userId: string;
+}
+
+export async function authenticateUserFromCookie(req: IncomingMessage) {
+  try {
+    const rawCookies = req.headers.cookie;
+    if (!rawCookies) {
+      console.warn("WS Auth Failed: No cookie header found in handshake.");
+      return null;
     }
 
-    // user find 
+    // Call parse directly
+    const parsedCookies = cookie.parseCookie(rawCookies);
+    const token = parsedCookies[COOKIE_NAME];
+
+    if (!token) {
+      console.warn(`WS Auth Failed: '${COOKIE_NAME}' not found in cookies.`);
+      return null;
+    }
+
+    if (!JWT_SECRET) {
+      console.error("WS Auth Failed: JWT_SECRET is not configured.");
+      return null;
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET) as AuthPayload
+    if (!decoded.userId || typeof decoded.userId !== "string") {
+      console.warn("WS Auth Failed: Token payload missing a valid userId.");
+      return null;
+    }
+
+    // Query database here
     const user = await prisma.user.findUnique({
-        where: { id: decoded.userId },
-        omit: { password: true }
-    })
+      where: { id: decoded.userId },
+      select: {
+        id: true,
+        username: true,
+      },
+    });
 
     if (!user) {
-        ws.close()
-        return;
+      console.warn(`WS Auth Failed: User ${decoded.userId} not found in database.`);
+      return null;
     }
 
-    return {
-        decoded,
-        user
-    };
+    return user; // Returns { id: string, username: string }
+    
+  } catch (error) {
+    console.error("WS Auth Failed: Invalid or expired token.", error);
+    return null;
+  }
 }

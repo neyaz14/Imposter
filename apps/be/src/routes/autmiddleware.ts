@@ -1,7 +1,8 @@
 import type { Request, Response, NextFunction } from "express";
 import { verify } from "jsonwebtoken";
-
-const JWT_SECRECT = process.env.JWT_SECRECT!;
+import "dotenv/config";
+import { JWT_SECRECT } from "../utils/types";
+const JWT_SECRET = JWT_SECRECT!;
 
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const token: string = req.cookies.accessToken;
@@ -32,9 +33,9 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
 };
 
 export const verifyToken = (givenToken: string) => {
-  const decodedToken = verify(givenToken, JWT_SECRECT) as {
+  const decodedToken = verify(givenToken, JWT_SECRET) as {
     userId: string;
-  };;
+  };
 
   return decodedToken;
 }

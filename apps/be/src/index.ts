@@ -3,6 +3,7 @@ import { prisma } from "@repo/db";
 import "dotenv/config";
 import { authRouter } from "./routes/auth.router";
 import cookieParser from "cookie-parser";
+import "dotenv/config";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
