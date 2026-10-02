@@ -4,6 +4,7 @@ import "dotenv/config";
 import jwt from "jsonwebtoken";
 import { prisma } from "@repo/db";
 import { JWT_SECRECT } from "./types";
+import { AppError } from "./error/AppError";
 
 
 const JWT_SECRET = JWT_SECRECT;
@@ -48,18 +49,37 @@ export async function authenticateUserFromCookie(req: IncomingMessage) {
       select: {
         id: true,
         username: true,
+        email: true
       },
     });
 
     if (!user) {
       console.warn(`WS Auth Failed: User ${decoded.userId} not found in database.`);
-      return null;
+      throw new AppError(
+       
+         401,
+      "User_not_authenticated",
+      "User does not authenticated----"
+
+      )
+
     }
 
     return user; // Returns { id: string, username: string }
-    
+
   } catch (error) {
     console.error("WS Auth Failed: Invalid or expired token.", error);
+
+    throw new AppError(
+      401,
+      "User_not_authenticated",
+      "User does not authenticated----"
+      
+      
+
+    )
     return null;
   }
 }
+
+
