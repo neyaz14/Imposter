@@ -9,7 +9,7 @@
     "start": "bun src/index.ts"
   },
   "devDependencies": {
-    "@repo/common": "*",
+    "@repo/common": "workspace:*",
     "@repo/db": "workspace:*",
     "@types/bun": "latest",
     "@types/cookie": "^1.0.0",
